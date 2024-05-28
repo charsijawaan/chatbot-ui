@@ -9,6 +9,9 @@ import {
 import { Button } from "@/components/ui/button"
 import axios from "axios"
 import { toast } from "sonner"
+import { buttonVariants } from "@/components/ui/button"
+import Link from "next/link"
+import { cn } from "@/lib/utils"
 
 export function SubscribeForms({ isPro }: { isPro: boolean }) {
   const onSubscribe = async () => {
@@ -121,9 +124,15 @@ export function SubscribeForms({ isPro }: { isPro: boolean }) {
               </div>
             </CardContent>
             <CardFooter className="">
-              <Button className=" mt-48 h-11 w-full text-xl font-bold">
+              <Link
+                href="/login"
+                className={cn(
+                  buttonVariants({}),
+                  "mt-48 h-11 w-full text-xl font-bold"
+                )}
+              >
                 Remain on Free
-              </Button>
+              </Link>
             </CardFooter>
           </Card>
           <Card className=" m-6 w-[500px] p-6">
