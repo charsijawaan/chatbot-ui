@@ -11,9 +11,7 @@ export const checkSubscription = async () => {
 
   const { data, error: supabaseError } = await supabase
     .from("user_subscription")
-    .select(
-      "stripe_subscription_id, stripe_current_period_end, stripe_customer_id, stripe_price_id"
-    )
+    .select("*")
     .eq("user_id", user.id)
     .single()
 
@@ -25,5 +23,8 @@ export const checkSubscription = async () => {
     data.stripe_price_id &&
     new Date(data.stripe_current_period_end).getTime() + DAY_IN_MS > Date.now()
 
-  return !!isValid
+  if (!!isValid) {
+    return data?.tier
+  }
+  return false
 }

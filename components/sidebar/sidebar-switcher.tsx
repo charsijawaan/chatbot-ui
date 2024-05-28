@@ -38,7 +38,7 @@ export const SidebarSwitcher: FC<SidebarSwitcherProps> = ({
   useEffect(() => {
     ;(async () => {
       const res = await checkSubscription()
-      setIsPro(res)
+      setIsPro(!!res)
     })()
   }, [])
 

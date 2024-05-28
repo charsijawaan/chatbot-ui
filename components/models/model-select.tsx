@@ -12,6 +12,7 @@ import { Input } from "../ui/input"
 import { Tabs, TabsList, TabsTrigger } from "../ui/tabs"
 import { ModelIcon } from "./model-icon"
 import { ModelOption } from "./model-option"
+import { checkSubscription } from "@/db/user-subscription"
 
 interface ModelSelectProps {
   selectedModelId: string
@@ -36,6 +37,7 @@ export const ModelSelect: FC<ModelSelectProps> = ({
   const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState("")
   const [tab, setTab] = useState<"hosted" | "local">("hosted")
+  const [tier, setTier] = useState<string | null>(null)
 
   useEffect(() => {
     if (isOpen) {
@@ -44,6 +46,13 @@ export const ModelSelect: FC<ModelSelectProps> = ({
       }, 100) // FIX: hacky
     }
   }, [isOpen])
+
+  useEffect(() => {
+    ;(async () => {
+      const tier = await checkSubscription()
+      setTier(tier)
+    })()
+  }, [])
 
   const handleSelectModel = (modelId: LLMID) => {
     onSelectModel(modelId)
@@ -64,7 +73,7 @@ export const ModelSelect: FC<ModelSelectProps> = ({
     ...availableOpenRouterModels
   ]
 
-  const groupedModels = allModels.reduce<Record<string, LLM[]>>(
+  let groupedModels = allModels.reduce<Record<string, LLM[]>>(
     (groups, model) => {
       const key = model.provider
       if (!groups[key]) {
@@ -75,6 +84,17 @@ export const ModelSelect: FC<ModelSelectProps> = ({
     },
     {}
   )
+  let limitedGroupedModels: Record<string, LLM[]> = {}
+
+  for (let key in groupedModels) {
+    if (tier === "basic") {
+      limitedGroupedModels[key] = groupedModels[key].slice(0, 3)
+    } else if (tier === "pro") {
+      limitedGroupedModels[key] = groupedModels[key]
+    } else {
+      limitedGroupedModels[key] = groupedModels[key].slice(0, 1)
+    }
+  }
 
   const selectedModel = allModels.find(
     model => model.modelId === selectedModelId
@@ -151,7 +171,7 @@ export const ModelSelect: FC<ModelSelectProps> = ({
         />
 
         <div className="max-h-[300px] overflow-auto">
-          {Object.entries(groupedModels).map(([provider, models]) => {
+          {Object.entries(limitedGroupedModels)?.map(([provider, models]) => {
             const filteredModels = models
               .filter(model => {
                 if (tab === "hosted") return model.provider !== "ollama"
