@@ -83,44 +83,25 @@ export async function POST(req: Request) {
     }
   }
 
-  if (event.type === "customer.subscription.deleted") {
-    const subscription = await stripe.subscriptions.retrieve(
-      session.subscription as string
-    )
+  // if (event.type === "customer.subscription.updated") {
+  //   const subscription = await stripe.subscriptions.retrieve(
+  //     session.subscription as string
+  //   )
 
-    let date = new Date()
-    date.setDate(date.getDate() - 1)
+  //   need to check if plan is changed or subscription is canceled
 
-    const { error } = await supabase
-      .from("user_subscription")
-      .update({
-        stripe_current_period_end: date.toISOString()
-      })
-      .eq("stripe_subscription_id", subscription.id)
+  //   const { error } = await supabase
+  //     .from("user_subscription")
+  //     .update({
+  //       stripe_price_id: subscription.items.data[0].price.id
+  //     })
+  //     .eq("stripe_subscription_id", subscription.id)
 
-    if (error) {
-      console.error("[WEBHOOK_ERROR]", error)
-      return new NextResponse("Internal Error", { status: 500 })
-    }
-  }
-
-  if (event.type === "customer.subscription.updated") {
-    const subscription = await stripe.subscriptions.retrieve(
-      session.subscription as string
-    )
-
-    const { error } = await supabase
-      .from("user_subscription")
-      .update({
-        stripe_price_id: subscription.items.data[0].price.id
-      })
-      .eq("stripe_subscription_id", subscription.id)
-
-    if (error) {
-      console.error("[WEBHOOK_ERROR]", error)
-      return new NextResponse("Internal Error", { status: 500 })
-    }
-  }
+  //   if (error) {
+  //     console.error("[WEBHOOK_ERROR]", error)
+  //     return new NextResponse("Internal Error", { status: 500 })
+  //   }
+  // }
 
   return new NextResponse(null, { status: 200 })
 }
