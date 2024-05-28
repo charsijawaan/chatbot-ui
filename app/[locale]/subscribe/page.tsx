@@ -9,7 +9,7 @@ import { SubscribeForms } from "@/components/subscribe/subscribe-forms"
 
 export default async function SubscribePage() {
   const isPro = await checkSubscription()
-
+  //
   return (
     <>
       <Link href="/login">
