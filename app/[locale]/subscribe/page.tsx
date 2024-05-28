@@ -46,12 +46,14 @@ export default async function SubscribePage() {
   isPro = !!isValid
 
   return (
-    <>
-      <Link href="/login">
-        <Button className="absolute left-2 top-2">Home</Button>
-      </Link>
+    <div className="my-6">
+      <div className="flex justify-end">
+        <Link href="/login">
+          <Button className="">Home</Button>
+        </Link>
+      </div>
 
-      <Card className=" absolute mt-20 flex h-[80%] w-[70%] flex-col items-center justify-center">
+      <Card className="mt-6 flex flex-col items-center justify-center">
         <CardHeader className="flex items-center justify-center text-center">
           <CardTitle>
             Your Current Plan is{" "}
@@ -70,6 +72,6 @@ export default async function SubscribePage() {
           <SubscribeForms isPro={isPro} />
         </CardContent>
       </Card>
-    </>
+    </div>
   )
 }

@@ -1,5 +1,5 @@
 import { Database } from "@/supabase/types"
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { stripe } from "@/lib/stripe"
 import { absoluteUrl } from "@/lib/utils"
 import { getServerProfile } from "@/lib/server/server-chat-helpers"
@@ -8,8 +8,11 @@ import { cookies } from "next/headers"
 
 const returnUrl = absoluteUrl("/subscribe")
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const url = new URL(req.url)
+    const searchParams = new URLSearchParams(url.searchParams)
+    const tier = searchParams.get("tier")
     const cookieStore = cookies()
 
     const supabaseAdmin = createServerClient<Database>(
@@ -56,17 +59,10 @@ export async function GET() {
         customer_email: user?.email,
         line_items: [
           {
-            price_data: {
-              currency: "USD",
-              product_data: {
-                name: "Chatbot-UI Pro",
-                description: "Access the pro features of ChatbotUI"
-              },
-              unit_amount: 1000,
-              recurring: {
-                interval: "month"
-              }
-            },
+            price:
+              tier === "basic"
+                ? "price_1PLS3BDQymimXUADLgGF7K8V"
+                : "price_1PLS3QDQymimXUADI5ZAhm74",
             quantity: 1
           }
         ],

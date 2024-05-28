@@ -14,24 +14,24 @@ import Link from "next/link"
 import { cn } from "@/lib/utils"
 
 export function SubscribeForms({ isPro }: { isPro: boolean }) {
-  const onSubscribe = async () => {
+  const onSubscribe = async (tier: "basic" | "pro" | "") => {
     try {
-      const response = await axios.get("/api/stripe")
+      const response = await axios.get("/api/stripe?tier=" + tier)
       window.location.href = response.data.url
     } catch (error) {
       toast.error("Something went wrong")
     }
   }
 
-  const onCancelSubscription = async () => {
-    try {
-      const response = await axios.get("/api/stripe/cancel")
-      toast.success("Subscription cancelled")
-      window.location.reload()
-    } catch (error) {
-      toast.error("Something went wrong")
-    }
-  }
+  // const onCancelSubscription = async () => {
+  //   try {
+  //     const response = await axios.get("/api/stripe/cancel")
+  //     toast.success("Subscription cancelled")
+  //     window.location.reload()
+  //   } catch (error) {
+  //     toast.error("Something went wrong")
+  //   }
+  // }
 
   return (
     <>
@@ -87,7 +87,10 @@ export function SubscribeForms({ isPro }: { isPro: boolean }) {
             <CardFooter className="">
               <Button
                 className="mt-12 h-11 w-full bg-blue-500 text-xl font-bold"
-                onClick={onCancelSubscription}
+                // onClick={onCancelSubscription}
+                onClick={() => {
+                  onSubscribe("")
+                }}
               >
                 Cancel Subscription
               </Button>
@@ -95,8 +98,8 @@ export function SubscribeForms({ isPro }: { isPro: boolean }) {
           </Card>
         </div>
       ) : (
-        <div className="grid w-full grid-cols-2">
-          <Card className=" m-6 size-[500px] p-6">
+        <div className="grid w-full grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <Card className="p-6 ">
             <CardHeader>
               <CardTitle>
                 <div className="flex h-[60px] justify-between">
@@ -135,12 +138,12 @@ export function SubscribeForms({ isPro }: { isPro: boolean }) {
               </Link>
             </CardFooter>
           </Card>
-          <Card className=" m-6 w-[500px] p-6">
+          <Card className="p-6 ">
             <CardHeader>
               <CardTitle>
                 <div className="flex h-[60px] justify-between">
                   <div className="text-4xl font-extrabold tracking-wide">
-                    Pro
+                    Basic
                   </div>
                   <div>
                     <span className="text-4xl font-extrabold">$10</span>/ mo
@@ -185,9 +188,69 @@ export function SubscribeForms({ isPro }: { isPro: boolean }) {
             <CardFooter className="">
               <Button
                 className="mt-12 h-11 w-full bg-blue-500 text-xl font-bold"
-                onClick={onSubscribe}
+                onClick={() => {
+                  onSubscribe("basic")
+                }}
               >
-                Upgrade to Plus
+                Upgrade to Basic
+              </Button>
+            </CardFooter>
+          </Card>
+          <Card className="p-6 ">
+            <CardHeader>
+              <CardTitle>
+                <div className="flex h-[60px] justify-between">
+                  <div className="text-4xl font-extrabold tracking-wide">
+                    Pro
+                  </div>
+                  <div>
+                    <span className="text-4xl font-extrabold">$20</span>/ mo
+                  </div>
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="mt-2 grow space-y-1.5 font-light">
+                <div className="space-y-1 font-semibold">
+                  <div className="flex items-center space-x-2">
+                    <CheckIcon />
+                    <div>Use 100+ AI models with your API keys</div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <CheckIcon />
+                    <div>Prompt Library</div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <CheckIcon />
+                    <div>Reusable Chat Settings</div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <CheckIcon />
+                    <div>AI Assistants &amp; Tools</div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <CheckIcon />
+                    <div>Files &amp; Retrieval</div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <CheckIcon />
+                    <div>Workspaces</div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <CheckIcon />
+                    <div>Faster Messages</div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter className="">
+              <Button
+                className="mt-12 h-11 w-full bg-blue-500 text-xl font-bold"
+                onClick={() => {
+                  onSubscribe("pro")
+                }}
+              >
+                Upgrade to Pro
               </Button>
             </CardFooter>
           </Card>
