@@ -8,100 +8,115 @@ import { stripe } from "@/lib/stripe"
 import { cookies } from "next/headers"
 
 export async function POST(req: Request) {
-  const body = await req.text()
-  const signature = headers().get("Stripe-Signature") as string
-
-  let event: Stripe.Event
-
   try {
+    const body = await req.text()
+    const signature = headers().get("Stripe-Signature") as string
+
+    let event: Stripe.Event
+
     event = stripe.webhooks.constructEvent(
       body,
       signature,
       process.env.STRIPE_WEBHOOK_SECRET!
     )
-  } catch (error: any) {
-    return new NextResponse(`Webhook Error: ${error.message}`, { status: 400 })
-  }
 
-  const session = event.data.object as Stripe.Checkout.Session
-  const cookieStore = cookies()
-  const supabase = createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
+    const session = event.data.object as Stripe.Checkout.Session
+    const cookieStore = cookies()
+    const supabase = createServerClient<Database>(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value
+          }
         }
       }
-    }
-  )
-
-  if (event.type === "checkout.session.completed") {
-    const subscription = await stripe.subscriptions.retrieve(
-      session.subscription as string
     )
 
-    if (!session?.metadata?.userId) {
-      return new NextResponse("User id is required", { status: 400 })
-    }
+    if (event.type === "checkout.session.completed") {
+      const subscription = await stripe.subscriptions.retrieve(
+        session.subscription as string
+      )
 
-    const { error } = await supabase.from("user_subscription").insert({
-      user_id: session.metadata.userId,
-      stripe_subscription_id: subscription.id,
-      stripe_customer_id: subscription.customer as string,
-      stripe_price_id: subscription.items.data[0].price.id,
-      stripe_current_period_end: new Date(
-        subscription.current_period_end * 1000
-      ).toISOString()
-    })
+      if (!session?.metadata?.userId) {
+        return new NextResponse("User id is required", { status: 400 })
+      }
 
-    if (error) {
-      console.error("[WEBHOOK_ERROR]", error)
-      return new NextResponse("Internal Error", { status: 500 })
-    }
-  }
-
-  if (event.type === "invoice.payment_succeeded") {
-    const subscription = await stripe.subscriptions.retrieve(
-      session.subscription as string
-    )
-
-    const { error } = await supabase
-      .from("user_subscription")
-      .update({
+      const { error } = await supabase.from("user_subscription").insert({
+        user_id: session.metadata.userId,
+        stripe_subscription_id: subscription.id,
+        stripe_customer_id: subscription.customer as string,
         stripe_price_id: subscription.items.data[0].price.id,
         stripe_current_period_end: new Date(
           subscription.current_period_end * 1000
         ).toISOString()
       })
-      .eq("stripe_subscription_id", subscription.id)
 
-    if (error) {
-      console.error("[WEBHOOK_ERROR]", error)
-      return new NextResponse("Internal Error", { status: 500 })
+      if (error) {
+        console.error("[WEBHOOK_ERROR]", error)
+        return new NextResponse("Internal Error", { status: 500 })
+      }
     }
+
+    if (event.type === "invoice.payment_succeeded") {
+      const subscription = await stripe.subscriptions.retrieve(
+        session.subscription as string
+      )
+
+      const { error } = await supabase
+        .from("user_subscription")
+        .update({
+          stripe_price_id: subscription.items.data[0].price.id,
+          stripe_current_period_end: new Date(
+            subscription.current_period_end * 1000
+          ).toISOString()
+        })
+        .eq("stripe_subscription_id", subscription.id)
+
+      if (error) {
+        console.error("[WEBHOOK_ERROR]", error)
+        return new NextResponse("Internal Error", { status: 500 })
+      }
+    }
+
+    if (event.type === "customer.subscription.deleted") {
+      let date = new Date()
+      date.setDate(date.getDate() - 1)
+
+      const { error } = await supabase
+        .from("user_subscription")
+        .update({
+          stripe_current_period_end: date.toISOString()
+        })
+        .eq("stripe_subscription_id", session.id)
+
+      if (error) {
+        console.error("[WEBHOOK_ERROR]", error)
+        return new NextResponse("Internal Error", { status: 500 })
+      }
+    }
+
+    // if (event.type === "customer.subscription.updated") {
+    //   const subscription = await stripe.subscriptions.retrieve(
+    //     session.subscription as string
+    //   )
+    //   const { error } = await supabase
+    //     .from("user_subscription")
+    //     .update({
+    //       stripe_price_id: subscription.items.data[0].price.id
+    //     })
+    //     .eq("stripe_subscription_id", subscription.id)
+
+    //   if (error) {
+    //     console.error("[WEBHOOK_ERROR]", error)
+    //     return new NextResponse("Internal Error", { status: 500 })
+    //   }
+    // }
+
+    return new NextResponse(null, { status: 200 })
+  } catch (error: any) {
+    console.log(error)
+    return new NextResponse(`Webhook Error: ${error.message}`, { status: 400 })
   }
-
-  // if (event.type === "customer.subscription.updated") {
-  //   const subscription = await stripe.subscriptions.retrieve(
-  //     session.subscription as string
-  //   )
-
-  //   need to check if plan is changed or subscription is canceled
-
-  //   const { error } = await supabase
-  //     .from("user_subscription")
-  //     .update({
-  //       stripe_price_id: subscription.items.data[0].price.id
-  //     })
-  //     .eq("stripe_subscription_id", subscription.id)
-
-  //   if (error) {
-  //     console.error("[WEBHOOK_ERROR]", error)
-  //     return new NextResponse("Internal Error", { status: 500 })
-  //   }
-  // }
-
-  return new NextResponse(null, { status: 200 })
 }
