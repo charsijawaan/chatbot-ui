@@ -35,14 +35,9 @@ export async function POST(req: Request) {
     )
 
     if (event.type === "customer.subscription.deleted") {
-      let date = new Date()
-      date.setDate(date.getDate() - 1)
-
       const { error } = await supabase
         .from("user_subscription")
-        .update({
-          stripe_current_period_end: date.toISOString()
-        })
+        .delete()
         .eq("stripe_subscription_id", session.id)
 
       if (error) {
