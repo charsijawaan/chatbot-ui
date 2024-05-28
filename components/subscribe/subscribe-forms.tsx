@@ -20,6 +20,16 @@ export function SubscribeForms({ isPro }: { isPro: boolean }) {
     }
   }
 
+  const onCancelSubscription = async () => {
+    try {
+      const response = await axios.get("/api/stripe/cancel")
+      toast.success("Subscription cancelled")
+      window.location.reload()
+    } catch (error) {
+      toast.error("Something went wrong")
+    }
+  }
+
   return (
     <>
       {isPro ? (
@@ -74,9 +84,9 @@ export function SubscribeForms({ isPro }: { isPro: boolean }) {
             <CardFooter className="">
               <Button
                 className="mt-12 h-11 w-full bg-blue-500 text-xl font-bold"
-                // onClick={onSubscribe}
+                onClick={onCancelSubscription}
               >
-                Check Billing Page
+                Cancel Subscription
               </Button>
             </CardFooter>
           </Card>
