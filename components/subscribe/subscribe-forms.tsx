@@ -13,7 +13,13 @@ import { buttonVariants } from "@/components/ui/button"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 
-export function SubscribeForms({ isPro }: { isPro: boolean }) {
+export function SubscribeForms({
+  isPro,
+  tier
+}: {
+  isPro: boolean
+  tier: string
+}) {
   const onSubscribe = async (tier: "basic" | "pro" | "") => {
     try {
       const response = await axios.get("/api/stripe?tier=" + tier)
@@ -23,16 +29,6 @@ export function SubscribeForms({ isPro }: { isPro: boolean }) {
     }
   }
 
-  // const onCancelSubscription = async () => {
-  //   try {
-  //     const response = await axios.get("/api/stripe/cancel")
-  //     toast.success("Subscription cancelled")
-  //     window.location.reload()
-  //   } catch (error) {
-  //     toast.error("Something went wrong")
-  //   }
-  // }
-
   return (
     <>
       {isPro ? (
@@ -41,11 +37,14 @@ export function SubscribeForms({ isPro }: { isPro: boolean }) {
             <CardHeader>
               <CardTitle>
                 <div className="flex h-[60px] justify-between">
-                  <div className="text-4xl font-extrabold tracking-wide">
-                    Pro
+                  <div className="text-4xl font-extrabold capitalize tracking-wide">
+                    {tier}
                   </div>
                   <div>
-                    <span className="text-4xl font-extrabold">$10</span>/ mo
+                    <span className="text-4xl font-extrabold">
+                      ${tier === "basic" ? "10" : "20"}
+                    </span>
+                    / mo
                   </div>
                 </div>
               </CardTitle>
@@ -87,7 +86,6 @@ export function SubscribeForms({ isPro }: { isPro: boolean }) {
             <CardFooter className="">
               <Button
                 className="mt-12 h-11 w-full bg-blue-500 text-xl font-bold"
-                // onClick={onCancelSubscription}
                 onClick={() => {
                   onSubscribe("")
                 }}

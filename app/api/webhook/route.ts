@@ -93,23 +93,6 @@ export async function POST(req: Request) {
       }
     }
 
-    // if (event.type === "customer.subscription.updated") {
-    //   const subscription = await stripe.subscriptions.retrieve(
-    //     session.subscription as string
-    //   )
-    //   const { error } = await supabase
-    //     .from("user_subscription")
-    //     .update({
-    //       stripe_price_id: subscription.items.data[0].price.id
-    //     })
-    //     .eq("stripe_subscription_id", subscription.id)
-
-    //   if (error) {
-    //     console.error("[WEBHOOK_ERROR]", error)
-    //     return new NextResponse("Internal Error", { status: 500 })
-    //   }
-    // }
-
     return new NextResponse(null, { status: 200 })
   } catch (error: any) {
     console.log(error)

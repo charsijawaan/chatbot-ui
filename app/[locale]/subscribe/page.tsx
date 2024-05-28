@@ -29,9 +29,7 @@ export default async function SubscribePage() {
 
   const { data, error: supabaseError } = await supabase
     .from("user_subscription")
-    .select(
-      "stripe_subscription_id, stripe_current_period_end, stripe_customer_id, stripe_price_id"
-    )
+    .select("*")
     .eq("user_id", session?.user?.id ?? "")
     .single()
 
@@ -58,7 +56,7 @@ export default async function SubscribePage() {
           <CardTitle>
             Your Current Plan is{" "}
             {isPro ? (
-              <Badge className=" text-xl">Pro</Badge>
+              <Badge className="text-xl capitalize">{data.tier}</Badge>
             ) : (
               <>
                 <Badge className=" text-xl">Free</Badge>
@@ -69,7 +67,7 @@ export default async function SubscribePage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <SubscribeForms isPro={isPro} />
+          <SubscribeForms isPro={isPro} tier={data.tier} />
         </CardContent>
       </Card>
     </div>
