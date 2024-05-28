@@ -67,7 +67,8 @@ export async function GET(req: NextRequest) {
           }
         ],
         metadata: {
-          userId
+          userId,
+          tier: tier
         }
       })
 

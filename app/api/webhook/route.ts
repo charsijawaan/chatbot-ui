@@ -45,6 +45,7 @@ export async function POST(req: Request) {
 
       const { error } = await supabase.from("user_subscription").insert({
         user_id: session.metadata.userId,
+        tier: session.metadata.tier,
         stripe_subscription_id: subscription.id,
         stripe_customer_id: subscription.customer as string,
         stripe_price_id: subscription.items.data[0].price.id,
