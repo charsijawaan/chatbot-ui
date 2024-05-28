@@ -67,7 +67,7 @@ export default async function SubscribePage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <SubscribeForms isPro={isPro} tier={data.tier} />
+          <SubscribeForms isPro={isPro} tier={data?.tier ?? ""} />
         </CardContent>
       </Card>
     </div>
