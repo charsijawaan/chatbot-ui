@@ -61,8 +61,8 @@ export async function GET(req: NextRequest) {
           {
             price:
               tier === "basic"
-                ? "price_1PLS3BDQymimXUADLgGF7K8V"
-                : "price_1PLS3QDQymimXUADI5ZAhm74",
+                ? process.env.STRIPE_BASIC_PLAN
+                : process.env.STRIPE_PRO_PLAN,
             quantity: 1
           }
         ],
